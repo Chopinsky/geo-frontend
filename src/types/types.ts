@@ -3,6 +3,9 @@
  */
 
 import { GeoJSON } from "geojson";
+import React from "react";
+
+export type PaginatorClickAction = (page: number | null) => void;
 
 export type FieldType = "corporate" | "collective" | "individual";
 
@@ -24,12 +27,12 @@ export type PageInfo = {
   perPage: number;
   prev: null | number;
   next: null | number;
-}
+};
 
 export type PageFields = {
-  pages: PageInfo,
-  fields: BasicField[],
-}
+  pages: PageInfo;
+  fields: BasicField[];
+};
 
 export type CountryCode =
   | "AF"
