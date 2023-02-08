@@ -1,9 +1,9 @@
 import { Modal, ModalBody, ModalFooter, Button, List } from "reactstrap";
-import { ExtendedField } from "./types/types";
+import { ExtendedField, MessageType } from "./types/types";
 import { Position } from "geojson";
 
 type TableModalProps = {
-  modal: ExtendedField | null;
+  modal: ExtendedField | MessageType | null;
   onClose: () => void;
 };
 
@@ -15,7 +15,11 @@ function TableModal({ modal, onClose }: TableModalProps) {
   const { id, name, owner, type, countryCode, area, geoData } = modal;
   let coordinates: Position[] = [];
 
-  if (geoData && geoData.type === "FeatureCollection") {
+  if (
+    geoData &&
+    typeof geoData !== "string" &&
+    geoData.type === "FeatureCollection"
+  ) {
     const geometry = geoData.features[0].geometry;
     if (geometry.type === "Polygon") {
       coordinates = geometry.coordinates[0];

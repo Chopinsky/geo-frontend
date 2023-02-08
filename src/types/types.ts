@@ -26,8 +26,16 @@ export type RowDataType = {
   geoInfo: GeoJSON | null;
 };
 
+export type MessageType = {
+  [message: string]: string;
+};
+
+export type RowDataSrcType = {
+  [key: string]: string | number;
+};
+
 export type DataSrcType = {
-  [key: string]: SortableFields;
+  [id: string]: RowDataSrcType;
 };
 
 export type PaginatorClickAction = (page: number | null) => void;

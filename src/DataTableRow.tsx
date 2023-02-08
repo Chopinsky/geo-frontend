@@ -2,15 +2,14 @@ import Flag from "react-world-flags";
 import GeoJSONArea from "@mapbox/geojson-area";
 import { useEffect, useState } from "react";
 import { baseUrl } from "./utils/utils";
-import { SortableFields, ExtendedField } from "./types/types";
-import { GeoJSON } from "geojson";
+import { RowDataSrcType, ExtendedField, MessageType } from "./types/types";
 import { serializeToPoints } from "./utils/svgUtils";
 
 type DataTableRowProps = {
-  data: SortableFields;
+  data: RowDataSrcType;
   columns: Array<string>;
-  onExtraData: (f: ExtendedField) => void;
-  onRowClick: (f: ExtendedField) => void;
+  onExtraData: (f: ExtendedField | MessageType) => void;
+  onRowClick: (f: ExtendedField | MessageType) => void;
 };
 
 const getIcon = (type: string) => {
@@ -31,8 +30,10 @@ function DataTableRow({
   onExtraData,
   onRowClick,
 }: DataTableRowProps) {
-  const { id, name, type } = data;
-  const [fields, setFields] = useState<ExtendedField | null>(null);
+  let { id, name, type } = data;
+  const [fields, setFields] = useState<ExtendedField | MessageType | null>(
+    null
+  );
   const [area, setArea] = useState<number>(0);
   const [svgPath, setSvgPath] = useState<string>("");
 
@@ -47,13 +48,17 @@ function DataTableRow({
       mode: "cors",
     })
       .then((resp: Response) => resp.json())
-      .then((fields: ExtendedField | { [message: string]: string }) => {
+      .then((fields: ExtendedField | MessageType) => {
         if (fields && "message" in fields) {
           // this is a loading error
           return;
         }
 
-        if (fields.geoData && fields.geoData.type === "FeatureCollection") {
+        if (
+          fields.geoData &&
+          typeof fields.geoData !== "string" &&
+          fields.geoData.type === "FeatureCollection"
+        ) {
           const features = fields.geoData.features;
           const geometry = features[0].geometry;
 
@@ -96,9 +101,15 @@ function DataTableRow({
     <tr key={id} onClick={() => handleRowClick()}>
       {columns.map((col) => {
         if (col === "type") {
+          let farmType = typeof type === "string" ? type : "";
           return (
             <td key={`${id}-type`}>
-              <img src={getIcon(type)} alt={type} width="20" height="20" />
+              <img
+                src={getIcon(farmType)}
+                alt={farmType}
+                width="20"
+                height="20"
+              />
             </td>
           );
         }
