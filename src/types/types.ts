@@ -27,7 +27,7 @@ export type RowDataType = {
 };
 
 export type DataSrcType = {
-  [key: string]: BasicField;
+  [key: string]: SortableFields;
 };
 
 export type PaginatorClickAction = (page: number | null) => void;
@@ -40,10 +40,15 @@ export type BasicField = {
   type: FieldType;
 };
 
+export type SortableFields = BasicField & {
+  country: string;
+  area: number;
+};
+
 export type ExtendedField = BasicField & {
   countryCode: CountryCode;
   owner: string;
-  geoData: GeoJSON;
+  geoData?: GeoJSON;
   area?: number;
 };
 

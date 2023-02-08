@@ -2,11 +2,12 @@ import Flag from "react-world-flags";
 import GeoJSONArea from "@mapbox/geojson-area";
 import { useEffect, useState } from "react";
 import { baseUrl } from "./utils/utils";
-import { BasicField, ExtendedField } from "./types/types";
+import { SortableFields, ExtendedField } from "./types/types";
 import { GeoJSON } from "geojson";
+import { serializeToPoints } from "./utils/svgUtils";
 
 type DataTableRowProps = {
-  data: BasicField;
+  data: SortableFields;
   columns: Array<string>;
   onExtraData: (f: ExtendedField) => void;
   onRowClick: (f: ExtendedField) => void;
@@ -33,24 +34,36 @@ function DataTableRow({
   const { id, name, type } = data;
   const [fields, setFields] = useState<ExtendedField | null>(null);
   const [area, setArea] = useState<number>(0);
+  const [svgPath, setSvgPath] = useState<string>("");
 
   const loadExtraData = () => {
     if (!id) {
       return;
     }
 
-    const url = `${baseUrl}/fields/${id}?fast&succeed`;
+    const url = `${baseUrl}/fields/${id}?fast`;
 
     fetch(url, {
       mode: "cors",
     })
-      .then((resp) => resp.json())
-      .then((fields: ExtendedField) => {
-        if (fields.geoData.type === "FeatureCollection") {
+      .then((resp: Response) => resp.json())
+      .then((fields: ExtendedField | { [message: string]: string }) => {
+        if (fields && "message" in fields) {
+          // this is a loading error
+          return;
+        }
+
+        if (fields.geoData && fields.geoData.type === "FeatureCollection") {
           const features = fields.geoData.features;
-          const areaInSquaredMeters = GeoJSONArea.geometry(
-            features[0].geometry
-          );
+          const geometry = features[0].geometry;
+
+          if (geometry.type === "Polygon") {
+            const svg = serializeToPoints(geometry.coordinates[0], 20);
+            setSvgPath(svg);
+            // console.log(geometry, svg);
+          }
+
+          const areaInSquaredMeters = GeoJSONArea.geometry(geometry);
 
           const areaInAcres =
             Math.round(0.000247105 * areaInSquaredMeters) / 100;
@@ -92,7 +105,7 @@ function DataTableRow({
 
         if (col === "country") {
           if (fields === null) {
-            return <td></td>;
+            return <td key={`${id}-country`}></td>;
           }
 
           let countryCode = fields.countryCode;
@@ -120,7 +133,20 @@ function DataTableRow({
           return <td key={`${id}-name`}>{name}</td>;
         }
 
-        return <td></td>;
+        if (col === "shape") {
+          return (
+            <td key={`${id}-shape`}>
+              <svg height="20" width="20">
+                <polygon
+                  points={svgPath}
+                  style={{ fill: "grey", stroke: "grey", strokeWidth: 1 }}
+                />
+              </svg>
+            </td>
+          );
+        }
+
+        return <td key={`${id}`}></td>;
       })}
     </tr>
   );

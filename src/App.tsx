@@ -29,7 +29,7 @@ function App() {
     try {
       geoData = await resp.json();
       setMessage(null);
-      console.log(geoData);
+      // console.log(geoData);
     } catch (e) {
       setMessage({ level: "danger", message: JSON.stringify(e) });
       console.error(e);
@@ -64,7 +64,7 @@ function App() {
       <Navbar color="dark" dark>
         <NavbarBrand href="/">Geo App</NavbarBrand>
       </Navbar>
-      <Container className="color-light" fluid="lg">
+      <Container className="bg-dark container-custom" fluid="lg">
         {message ? (
           <AlertBars alert={message} alertAction={() => setMessage(null)} />
         ) : null}
