@@ -13,12 +13,12 @@ function TableModal({ modal, onClose }: TableModalProps) {
   }
 
   const { id, name, owner, type, countryCode, area, geoData } = modal;
-  let coordinates: Position[][] = [];
+  let coordinates: Position[] = [];
 
-  if (geoData.type === "FeatureCollection") {
+  if (geoData && geoData.type === "FeatureCollection") {
     const geometry = geoData.features[0].geometry;
     if (geometry.type === "Polygon") {
-      coordinates = geometry.coordinates;
+      coordinates = geometry.coordinates[0];
     }
   }
 

@@ -1,7 +1,9 @@
 .full-page {
   height: 100%;
+  padding: 0 10%;
 }
 
-.color-light {
+.container-custom {
   color: #e1f5fe;
+  padding: 1rem 2rem;
 }

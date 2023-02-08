@@ -1,11 +1,11 @@
-const rawGeoData = [
-  [-129.436347933385,54.7732837504813], 
-  [-141.8914201164901,45.53125106221043],
-  [-135.40170726381763, 49.36480731298598],
-  [-140.14403453727405, 55.75709117241593],
-  [-134.00157945695298, 53.13553555813956],
-  [-129.436347933385, 54.7732837504813]
-];
+// const rawGeoData = [
+//   [-129.436347933385,54.7732837504813],
+//   [-141.8914201164901,45.53125106221043],
+//   [-135.40170726381763, 49.36480731298598],
+//   [-140.14403453727405, 55.75709117241593],
+//   [-134.00157945695298, 53.13553555813956],
+//   [-129.436347933385, 54.7732837504813]
+// ];
 
 const getRanges = (src) => {
   let minX = src[0][0];
@@ -30,30 +30,36 @@ const transform = (src) => {
   const dy = y1 - y0;
 
   src.forEach(([x, y]) => {
-    const tx = 100 * (x-x0) / dx;
-    const ty = 100 * (1 - (y-y0) / dy);
+    const tx = (100 * (x - x0)) / dx;
+    const ty = 100 * (1 - (y - y0) / dy);
     geoData.push([tx, ty]);
   });
 
   return geoData;
 };
 
-const serializeToPoints = (src) => {
+export const serializeToPoints = (src, base = 100) => {
+  if (!src || src.length < 3) {
+    return "";
+  }
+
+  const transformed = transform(src);
+  const scale = 100 / base;
   let points = "";
 
-  src.forEach(([x, y]) => {
+  transformed.forEach(([x, y]) => {
     if (points.length > 0) {
       points += " ";
     }
 
-    let xVal = Math.round(x * 100) / 100;
-    let yVal = Math.round(y * 100) / 100;
+    let xVal = Math.round(x * 100) / 100 / scale;
+    let yVal = Math.round(y * 100) / 100 / scale;
 
     points += `${xVal},${yVal}`;
   });
 
-  return points
+  return points;
 };
 
-const transformed = transform(rawGeoData);
-console.log(serializeToPoints(transformed));
+// const transformed = transform(rawGeoData);
+// console.log(serializeToPoints(transformed));
