@@ -1,6 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { Table } from "reactstrap";
-import { BasicField, ExtendedField, DataSrcType } from "./types/types";
+import {
+  BasicField,
+  ExtendedField,
+  DataSrcType,
+  MessageType,
+} from "./types/types";
 import DataTableRow from "./DataTableRow";
 import TableModal from "./TableModal";
 
@@ -25,15 +30,11 @@ const buildHeader = (columns: Array<string>, onClick: (c: string) => void) => {
 function DataTable({ data }: DataTableProps) {
   const [displayRows, setDisplayRows] = useState<Array<string>>([]);
   const [rows, setRows] = useState<DataSrcType>({});
-  const [modal, setModal] = useState<ExtendedField | null>(null);
-  const [sortInfo, setSortInfo] = useState<Array>(["", 0]);
+  const [modal, setModal] = useState<ExtendedField | MessageType | null>(null);
+  const [sortInfo, setSortInfo] = useState<Array<any>>(["", 0]);
   const [originalOrder, setOriginalOrder] = useState<Array<string>>([]);
 
   const columns = ["name", "type", "country", "area", "shape"];
-  const sortData: { [key: string]: ExtendedField } = {};
-
-  let sortCol: string = "";
-  let sortDir: number = 0;
 
   // build rows and displayRows
   useEffect(() => {
@@ -49,8 +50,9 @@ function DataTable({ data }: DataTableProps) {
       rowsData[r.id] = {
         id: r.id,
         name: r.name,
-        type: r.type,
-        country: "",
+        type: r.type as string,
+        owner: "",
+        countryCode: "",
         area: 0,
       };
     });
@@ -64,17 +66,33 @@ function DataTable({ data }: DataTableProps) {
     setDisplayRows(orderedRows);
   }, [data]);
 
-  const receiveExtraData = (f: ExtendedField) => {
-    rows[f.id] = f;
+  const receiveExtraData = (f: ExtendedField | MessageType) => {
+    if (f && "message" in f) {
+      return;
+    }
+
+    rows[f.id] = {
+      id: f.id,
+      name: f.name,
+      owner: f.owner,
+      type: f.type as string,
+      countryCode: f.countryCode as string,
+      area: f.area ? f.area : 0,
+    };
+
     setRows(rows);
   };
 
-  const handleRowClick = (f: ExtendedField) => {
+  const handleRowClick = (f: ExtendedField | MessageType) => {
+    if (f && "message" in f) {
+      return;
+    }
+
     // console.log(f);
     setModal(f);
   };
 
-  const handleHeaderClick = (col) => {
+  const handleHeaderClick = (col: string) => {
     // not sortable
     if (col === "shape") {
       return;
