@@ -5,6 +5,31 @@
 import { GeoJSON } from "geojson";
 import React from "react";
 
+export type Message = {
+  message: string;
+  level:
+    | ""
+    | "primary"
+    | "secondary"
+    | "danger"
+    | "warning"
+    | "info"
+    | "light"
+    | "dark";
+};
+
+export type RowDataType = {
+  id: string;
+  name: string;
+  type: string;
+  country: string | null;
+  geoInfo: GeoJSON | null;
+};
+
+export type DataSrcType = {
+  [key: string]: BasicField;
+};
+
 export type PaginatorClickAction = (page: number | null) => void;
 
 export type FieldType = "corporate" | "collective" | "individual";
@@ -19,6 +44,7 @@ export type ExtendedField = BasicField & {
   countryCode: CountryCode;
   owner: string;
   geoData: GeoJSON;
+  area?: number;
 };
 
 export type PageInfo = {
@@ -274,6 +300,7 @@ export type CountryCode =
   | "UM"
   | "UY"
   | "UZ"
+  | "UK"
   | "VU"
   | "VE"
   | "VN"

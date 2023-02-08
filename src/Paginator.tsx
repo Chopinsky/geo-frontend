@@ -1,8 +1,7 @@
-import { PageInfo, PaginatorClickAction } from "../types/types";
+import { PageInfo, PaginatorClickAction } from "./types/types";
 import { Pagination, PaginationItem, PaginationLink } from "reactstrap";
 
 type PaginatorProps = {
-  baseUrl: string | null;
   pages: PageInfo | null;
   actions: PaginatorClickAction;
 };
@@ -17,12 +16,6 @@ type LinkParams = {
   actions: PaginatorClickAction;
 };
 
-const linkBuilder = (baseUrl: string, page: number, fast: boolean = false) => {
-  return `${baseUrl}/fields?${!isNaN(page) && page >= 1 ? "page=" + page : ""}${
-    fast ? "fast" : ""
-  }`;
-};
-
 const buildPaginationLink = ({
   first,
   last,
@@ -33,11 +26,11 @@ const buildPaginationLink = ({
   actions,
 }: LinkParams) => {
   return (
-    <PaginationItem active={active}>
+    <PaginationItem active={active} key={page}>
       <PaginationLink
         first={first}
         last={last}
-        prev={prev}
+        previous={prev}
         next={next}
         href=""
         onClick={() => actions(page)}
@@ -49,27 +42,30 @@ const buildPaginationLink = ({
 };
 
 function Paginator(params: PaginatorProps) {
-  let { pages, baseUrl, actions } = params;
-
+  let { pages, actions } = params;
   if (!pages) {
     return <></>;
   }
 
-  if (!baseUrl) {
-    baseUrl = "";
-  }
-
-  let { total, perPage, prev, next, page } = pages;
-  if (perPage <= 0) {
-    perPage = 1;
-  }
-
-  const totalPages = Math.ceil(total / perPage);
-  if (totalPages <= 0 || pages.page > totalPages) {
+  const { total, prev, next, page } = pages;
+  if (total <= 0 || page > total) {
     return <></>;
   }
 
-  const pageList = Array.from(Array(totalPages).keys());
+  const pageList = [];
+
+  // try to centralize the current page in the paginator:
+  //   1) starting from the left side
+  //   2) then fill 7 total pages from left
+  //   3) then fill 7 total pages from right
+  let left = Math.max(1, page - 3);
+  let right = Math.min(total, left + 6);
+  left = Math.max(1, right - 6);
+
+  for (let i: number = left; i <= right; i++) {
+    pageList.push(i);
+  }
+
   const defaultLinkParam = {
     first: false,
     last: false,
@@ -89,7 +85,6 @@ function Paginator(params: PaginatorProps) {
         : null}
 
       {pageList.map((currPage) => {
-        currPage = currPage + 1;
         return buildPaginationLink({
           ...defaultLinkParam,
           page: currPage,
@@ -104,7 +99,7 @@ function Paginator(params: PaginatorProps) {
       {buildPaginationLink({
         ...defaultLinkParam,
         last: true,
-        page: totalPages,
+        page: total,
       })}
     </Pagination>
   );
